@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub - منصة الدراسة</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+body{background:linear-gradient(135deg,#1e1b2e,#2d2643);color:#eee;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#181430;border-bottom:1px solid #322a55;flex-wrap:wrap;gap:8px}
+header h1{color:#a78bfa;font-size:1.25rem}
+main{max-width:1000px;margin:0 auto;padding:20px}
+.card{background:#252040;border-radius:14px;padding:18px;box-shadow:0 4px 18px rgba(0,0,0,.3);margin-bottom:16px}
+.card h2,.card h3{color:#a78bfa;font-size:1.05rem;margin-bottom:12px}
+input,textarea,button{font-size:1rem;border:none;border-radius:8px;padding:10px}
+input,textarea{width:100%;background:#1a1630;color:#eee;margin-bottom:10px;outline:none;border:1px solid #322a55}
+input:focus,textarea:focus{border-color:#7c5cff}
+button{background:#7c5cff;color:#fff;cursor:pointer}
+button:hover{background:#9b7dff}
+.btn2{background:#33295e;color:#cfc6ff}
+.row{display:flex;gap:10px}
+.row input{margin-bottom:0}
+.code{font-family:monospace;font-size:1.05rem;background:#1a1630;border:1px dashed #7c5cff;padding:10px;border-radius:8px;text-align:center;letter-spacing:1px;direction:ltr;word-break:break-all;margin-bottom:10px}
+ul{list-style:none}
+li{display:flex;justify-content:space-between;align-items:center;background:#1a1630;border-radius:8px;padding:10px;margin-bottom:8px}
+li.done span{text-decoration:line-through;color:#666}
+.btn-del{background:#e05555;padding:4px 10px;font-size:.8rem}
+.msgs{max-height:320px;overflow-y:auto;margin-bottom:12px;padding:4px}
+.msg{background:#1a1630;border-radius:10px;padding:8px 12px;margin-bottom:8px;max-width:85%}
+.msg.me{background:#31265c;border:1px solid #7c5cff;margin-inline-start:auto}
+.msg .who{color:#9b7dff;font-size:.8rem;font-weight:bold}
+.msg .time{color:#777;font-size:.7rem;direction:ltr}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+small.hint{color:#888;display:block;margin:2px 0 10px}
+.statnum{font-size:2rem;color:#9b7dff;font-weight:bold;text-align:center}
+hr{border:none;border-top:1px solid #322a55;margin:12px 0}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{background:#1a1630;border:1px solid #322a55;color:#bbb;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:.95rem}
+.tab.active{background:#7c5cff;color:#fff;border-color:#7c5cff}
+.pill{background:#33295e;border:none;color:#cfc6ff;border-radius:20px;padding:6px 14px;cursor:pointer}
+.timer-display{font-size:2.6rem;text-align:center;font-weight:bold;letter-spacing:3px;margin:12px 0;direction:ltr}
+.timer-btns{display:flex;gap:10px;justify-content:center}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📚 StudyHub</h1>
+  <div class="row">
+    <button class="pill" id="langBtn" onclick="toggleLang()">EN</button>
+    <button class="pill" id="leaveBtn" onclick="leaveClass()" hidden>🚪</button>
+  </div>
+</header>
+
+<main>
+
+<section id="welcome">
+  <div class="card"><h2 id="wTag">منصة للدراسة والتعاون بين التلاميذ والأساتذة</h2></div>
+  <div class="grid2">
+    <div class="card">
+      <h2 id="wTeacher">👩‍🏫 أنا أستاذ</h2>
+      <input id="tName" placeholder="اسمك">
+      <input id="tClass" placeholder="اسم الفصل / المادة">
+      <button onclick="createClass()">إنشاء فصل جديد</button>
+      <hr>
+      <small class="hint" id="wTLogin">دخول الأستاذ (لدي رمز الأستاذ)</small>
+      <input id="ltId" placeholder="رمز الفصل">
+      <input id="ltCode" placeholder="رمز الأستاذ (T-XXXXXX)">
+      <button class="btn2" onclick="teacherLogin()">دخول</button>
+    </div>
+    <div class="card">
+      <h2 id="wStudent">🎒 أنا تلميذ</h2>
+      <input id="sName" placeholder="اسمك">
+      <input id="sId" placeholder="الصق رمز الفصل هنا">
+      <button onclick="studentJoin()">انضم</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2 id="wTools">🧰 أدواتي (تعمل بدون إنترنت)</h2>
+    <div id="toolsBox1"></div>
+  </div>
+</section>
+
+<section id="classView" hidden>
+  <div class="card">
+    <h2 id="clsName"></h2>
+    <small class="hint" id="hello"></small>
+    <div class="tabs">
+      <button class="tab" id="tabChat" onclick="setTab('chat')">💬 الدردشة</button>
+      <button class="tab" id="tabAssign" onclick="setTab('assign')">📋 الواجبات</button>
+      <button class="tab" id="tabShare" onclick="setTab('share')">🔗 المشاركة</button>
+      <button class="tab" id="tabTools" onclick="setTab('tools')">🧰 أدواتي</button>
+    </div>
+    <div id="tabBox"></div>
+  </div>
+</section>
+</main>
+
+<script>
+var DICT={
+ ar:{tag:"منصة للدراسة والتعاون بين التلاميذ والأساتذة",teacher:"👩‍🏫 أنا أستاذ",student:"🎒 أنا تلميذ",
+ tLogin:"دخول الأستاذ (لدي رمز الأستاذ)",createClass:"إنشاء فصل جديد",join:"انضم",
+ chat:"💬 الدردشة",assign:"📋 الواجبات",share:"🔗 المشاركة",tools:"🧰 أدواتي",
+ typeMsg:"اكتب رسالتك...",send:"إرسال",addAssign:"إضافة واجب",atitle:"عنوان الواجب",adesc:"التفاصيل (اختياري)",posted:"الواجبات المنشورة",
+ sLink:"رابط التلاميذ — شاركه مع أصدقائك 👥",tLink:"رابط الأستاذ — احتفظ به ولا تشاركه! 🔒",
+ classCode:"رمز الفصل",copy:"نسخ",copied:"تم النسخ ✓",tasks:"مهام اليوم",newTask:"مهمة جديدة...",add:"إضافة",
+ notes:"ملاحظاتي",notesPh:"اكتب ملاحظاتك هنا...",focus:"مؤقت التركيز (بومودورو)",start:"ابدأ",pause:"إيقاف",reset:"تصفير",
+ sessions:"جلسة تركيز مكتملة",bravo:"أحسنت! أكملت جلسة 🎉 خذ استراحة 5 دقائق.",leave:"خروج من الفصل",del:"حذف",
+ nameNeeded:"اكتب اسمك أولاً",codeNeeded:"أدخل رمز الفصل",notFound:"الفصل غير موجود — تأكد من الرمز",netErr:"تعذر الاتصال — تحقق من الإنترنت",
+ welcome:"مرحباً",createOk:"تم إنشاء الفصل! 🎉 احفظ الرموز والروابط من تبويب المشاركة",saveTC:"مهم: احفظ رمز الأستاذ الآن — لا يمكن استعادته!",
+ noAssign:"لا توجد واجبات بعد",noMsgs:"لا رسائل بعد — ابدأ الحديث! 👋",teacherTag:"أستاذ",wrongTC:"رمز الأستاذ غير صحيح"},
+ en:{tag:"A study & collaboration platform for students and teachers",teacher:"👩‍🏫 I'm a teacher",student:"🎒 I'm a student",
+ tLogin:"Teacher login (I have a teacher code)",createClass:"Create a new class",join:"Join",
+ chat:"💬 Chat",assign:"📋 Assignments",share:"🔗 Share",tools:"🧰 My tools",
+ typeMsg:"Type a message...",send:"Send",addAssign:"Add assignment",atitle:"Assignment title",adesc:"Details (optional)",posted:"Posted assignments",
+ sLink:"Student link — share it with your friends 👥",tLink:"Teacher link — keep it private! 🔒",
+ classCode:"Class code",copy:"Copy",copied:"Copied ✓",tasks:"Today's tasks",newTask:"New task...",add:"Add",
+ notes:"My notes",notesPh:"Write your notes here...",focus:"Focus timer (Pomodoro)",start:"Start",pause:"Pause",reset:"Reset",
+ sessions:"focus sessions completed",bravo:"Great job! Session done 🎉 Take a 5-min break.",leave:"Leave class",del:"Delete",
+ nameNeeded:"Enter your name first",codeNeeded:"Enter the class code",notFound:"Class not found — check the code",netErr:"Connection failed — check internet",
+ welcome:"Welcome",createOk:"Class created! 🎉 Save the codes and links from the Share tab",saveTC:"Important: save the teacher code now!",
+ noAssign:"No assignments yet",noMsgs:"No messages yet — say hi! 👋",teacherTag:"Teacher",wrongTC:"Wrong teacher code"}};
+var lang=localStorage.getItem('lang')||'ar';
+function T(k){ return DICT[lang][k]||DICT.ar[k]||k; }
+
+var room=null, cache=null, tab='chat', pollTimer=null, sending=false;
+try{ room=JSON.parse(localStorage.getItem('room')||'null'); }catch(e){ room=null; }
+var API='https://jsonblob.com/api/jsonBlob/';
+function gid(s){ return document.getElementById(s); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function saveRoom(){ if(room){ localStorage.setItem('room',JSON.stringify(room)); } else { localStorage.removeItem('room'); } }
+function randCode(){ var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789',c='T-',i; for(i=0;i<6;i++){ c+=A.charAt(Math.floor(Math.random()*A.length)); } return c; }
+function fmt(n){ return String(n).length<2?'0'+n:''+n; }
+
+function apiGet(id){
+ return fetch(API+id,{headers:{'Accept':'application/json'}}).then(function(r){
+   if(r.status===404){ throw new Error('notfound'); }
+   if(!r.ok){ throw new Error('net'); }
+   var et=r.headers.get('ETag');
+   return r.json().then(function(d){ return {data:d,etag:et}; });
+ });
+}
+function apiPut(id,data,etag){
+ var h={'Content-Type':'application/json','Accept':'application/json'};
+ if(etag){ h['If-Match']=etag; }
+ return fetch(API+id,{method:'PUT',headers:h,body:JSON.stringify(data)}).then(function(r){
+   if(!r.ok){ throw new Error('net'); }
+ });
+}
+function pushUpdate(mut){
+ return apiGet(room.id).then(function(g){
+   mut(g.data);
+   return apiPut(room.id,g.data,g.etag).then(function(){ cache=g; });
+ });
+}
+
+function applyStaticTexts(){
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ gid('langBtn').textContent=lang==='ar'?'EN':'عربي';
+ gid('wTag').textContent=T('tag');
+ gid('wTeacher').textContent=T('teacher');
+ gid('wStudent').textContent=T('student');
+ gid('wTLogin').textContent=T('tLogin');
+ gid('wTools').textContent=T('tools');
+ gid('tName').placeholder=lang==='ar'?'اسمك':'Your name';
+ gid('sName').placeholder=lang==='ar'?'اسمك':'Your name';
+ gid('tClass').placeholder=lang==='ar'?'اسم الفصل / المادة':'Class / subject name';
+ gid('sId').placeholder=lang==='ar'?'الصق رمز الفصل هنا':'Paste the class code here';
+ gid('ltId').placeholder=T('classCode');
+ gid('ltCode').placeholder=lang==='ar'?'رمز الأستاذ (T-XXXXXX)':'Teacher code (T-XXXXXX)';
+ gid('tabChat').textContent=T('chat');
+ gid('tabAssign').textContent=T('assign');
+ gid('tabShare').textContent=T('share');
+ gid('tabTools').textContent=T('tools');
+ gid('leaveBtn').textContent='🚪 '+T('leave');
+}
+function toggleLang(){
+ lang=(lang==='ar')?'en':'ar';
+ localStorage.setItem('lang',lang);
+ render();
+}
+function render(){
+ applyStaticTexts();
+ if(room){ renderClass(); } else { renderWelcome(); }
+}
+function renderWelcome(){
+ gid('welcome').hidden=false;
+ gid('classView').hidden=true;
+ gid('leaveBtn').hidden=true;
+ renderTools('toolsBox1');
+}
+function renderClass(){
+ gid('welcome').hidden=true;
+ gid('classView').hidden=false;
+ gid('leaveBtn').hidden=false;
+ gid('clsName').textContent=cache?String(cache.data.name):'...';
+ gid('hello').textContent=T('welcome')+' '+room.name+(room.role==='teacher'?' · '+T('teacherTag'):'');
+ renderTab();
+}
+function setTab(k){ tab=k; renderClass(); }
+function markTabs(){
+ var map={chat:'tabChat',assign:'tabAssign',share:'tabShare',tools:'tabTools'};
+ for(var k in map){ gid(map[k]).className='tab'+(tab===k?' active':''); }
+}
+function renderTab(){
+ markTabs();
+ var box=gid('tabBox');
+ if(tab==='chat'){
+   box.innerHTML='<div class="msgs" id="msgs"></div><div class="row"><input id="msgIn" placeholder="'+T('typeMsg')+'"><button onclick="sendMsg()">'+T('send')+'</button></div>';
+   renderMsgs();
+ } else if(tab==='assign'){
+   renderAssign();
+ } else if(tab==='share'){
+   renderShare();
+ } else {
+   box.innerHTML='<div id="toolsBox2"></div>';
+   renderTools('toolsBox2');
+ }
+}
+
+function createClass(){
+ var name=gid('tClass').value.trim(), t=gid('tName').value.trim();
+ if(!name||!t){ alert(T('nameNeeded')); return; }
+ var tc=randCode();
+ var data={v:1,name:name,teacher:t,teacherCode:tc,messages:[],assignments:[],students:[]};
+ fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(data)})
+ .then(function(r){
+   if(!r.ok){ throw new Error('net'); }
+   var loc=r.headers.get('Location');
+   if(!loc){ throw new Error('net'); }
+   var id=loc.split('/').pop();
+   room={id:id,role:'teacher',name:t,tc:tc};
+   saveRoom();
+   cache={data:data,etag:null};
+   tab='share';
+   render();
+   alert(T('createOk'));
+ }).catch(function(){ alert(T('netErr')); });
+}
+function teacherLogin(){
+ var id=gid('ltId').value.replace(/\s+/g,''), code=gid('ltCode').value.trim().toUpperCase();
+ if(!id||!code){ alert(T('codeNeeded')); return; }
+ apiGet(id).then(function(g){
+   if(g.data.teacherCode!==code){ alert(T('wrongTC')); return; }
+   room={id:id,role:'teacher',name:g.data.teacher,tc:code};
+   saveRoom(); cache=g; tab='chat'; render();
+ }).catch(function(){ alert(T('notFound')); });
+}
+function studentJoin(){
+ var name=gid('sName').value.trim(), id=gid('sId').value.replace(/\s+/g,'');
+ if(!name){ alert(T('nameNeeded')); return; }
+ if(!id){ alert(T('codeNeeded')); return; }
+ apiGet(id).then(function(g){
+   room={id:id,role:'student',name:name};
+   saveRoom(); cache=g; tab='chat';
+   if(g.data.students.indexOf(name)<0){ g.data.students.push(name); apiPut(id,g.data,g.etag).catch(function(){}); }
+   render();
+ }).catch(function(){ alert(T('notFound')); });
+}
+function leaveClass(){
+ if(!confirm(T('leave')+' ?')){ return; }
+ room=null; saveRoom();
+ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+ location.hash='';
+ render();
+}
+
+function sendMsg(){
+ var inp=gid('msgIn'), txt=inp.value.trim();
+ if(!txt){ return; }
+ if(sending){ return; }
+ sending=true; inp.value='';
+ pushUpdate(function(d){
+   d.messages.push({n:room.name,r:room.role,t:txt,ts:Date.now()});
+   if(d.messages.length>200){ d.messages=d.messages.slice(-200); }
+ }).then(function(){ renderMsgs(); }).catch(function(){ alert(T('netErr')); });
+ sending=false;
+}
+function renderMsgs(){
+ var el=gid('msgs'); if(!el){ return; }
+ var ms=cache?cache.data.messages:[];
+ if(!ms.length){ el.innerHTML='<p style="color:#888">'+T('noMsgs')+'</p>'; return; }
+ var h='',i,m;
+ for(i=0;i<ms.length;i++){
+   m=ms[i];
+   h+='<div class="msg'+(m.n===room.name?' me':'')+'"><span class="who">'+esc(m.n)+(m.r==='teacher'?' ('+T('teacherTag')+')':'')+'</span> <span class="time">'+new Date(m.ts).toLocaleString()+'</span><div>'+esc(m.t)+'</div></div>';
+ }
+ el.innerHTML=h;
+ el.scrollTop=el.scrollHeight;
+}
+
+function addAssign(){
+ var title=gid('aTitle').value.trim();
+ if(!title){ return; }
+ pushUpdate(function(d){
+   d.assignments.push({id:Date.now(),title:title,desc:gid('aDesc').value.trim(),due:gid('aDue').value});
+ }).then(function(){ renderAssign(); }).catch(function(){ alert(T('netErr')); });
+}
+function renderAssign(){
+ var box=gid('tabBox'); if(!box){ return; }
+ var as=cache?cache.data.assignments:[];
+ var h='';
+ if(room.role==='teacher'){
+   h+='<input id="aTitle" placeholder="'+T('atitle')+'"><input id="aDesc" placeholder="'+T('adesc')+'"><input id="aDue" type="date"><button onclick="addAssign()">'+T('addAssign')+'</button><hr>';
+ }
+ if(!as.length){ h+='<p style="color:#888">'+T('noAssign')+'</p>'; }
+ else{
+   h+='<h3>'+T('posted')+'</h3>';
+   var i,a;
+   for(i=as.length-1;i>=0;i--){
+     a=as[i];
+     h+='<li><div><b>'+esc(a.title)+'</b>'+(a.desc?'<br><small style="color:#999">'+esc(a.desc)+'</small>':'')+(a.due?'<br><small style="color:#ffb27c">📅 '+a.due+'</small>':'')+'</div></li>';
+   }
+ }
+ box.innerHTML=h;
+}
+
+function renderShare(){
+ var box=gid('tabBox'); if(!box){ return; }
+ var base=location.origin+location.pathname;
+ var h='<h3>'+T('classCode')+'</h3><div class="code">'+esc(room.id)+'</div><button onclick="copyText(\''+room.id+'\',this)">'+T('copy')+'</button>';
+ h+='<h3 style="margin-top:18px">'+T('sLink')+'</h3><div class="code" style="font-size:.82rem">'+esc(base+'#/join/'+room.id)+'</div><button onclick="copyText(\''+base+'#/join/'+room.id+'\',this)">'+T('copy')+'</button>';
+ if(room.role==='teacher'&&room.tc){
+   h+='<h3 style="margin-top:18px">'+T('tLink')+'</h3><div class="code" style="font-size:.82rem">'+esc(base+'#/t/'+room.id+'/'+room.tc)+'</div><button onclick="copyText(\''+base+'#/t/'+room.id+'/'+room.tc+'\',this)">'+T('copy')+'</button><small class="hint">'+T('saveTC')+'</small>';
+ }
+ box.innerHTML=h;
+}
+function copyText(txt,btn){
+ function done(){ btn.textContent=T('copied'); setTimeout(function(){ btn.textContent=T('copy'); },1500); }
+ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done,fb); } else { fb(); }
+ function fb(){ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove(); done(); }
+}
+
+function startPoll(){
+ if(pollTimer){ return; }
+ pollTimer=setInterval(function(){
+   if(!room){ return; }
+   apiGet(room.id).then(function(g){
+     cache=g;
+     var cn=gid('clsName'); if(cn){ cn.textContent=g.data.name; }
+     if(tab==='chat'){ renderMsgs(); } else if(tab==='assign'){ renderAssign(); }
+   }).catch(function(){});
+ },4000);
+}
+
+var seconds=1500, tick=null;
+var tasks=[];
+try{ tasks=JSON.parse(localStorage.getItem('tasks')||'[]'); }catch(e){ tasks=[]; }
+function renderTools(boxId){
+ var box=gid(boxId); if(!box){ return; }
+ box.innerHTML='<div class="grid2">'
+ +'<div class="card"><h2>⏱️ '+T('focus')+'</h2><div class="timer-display" id="display">25:00</div><div class="timer-btns"><button onclick="startTimer()">'+T('start')+'</button><button class="btn2" onclick="pauseTimer()">'+T('pause')+'</button><button class="btn2" onclick="resetTimer()">'+T('reset')+'</button></div></div>'
+ +'<div class="card"><h2>✅ '+T('tasks')+'</h2><div class="row"><input id="taskInput" placeholder="'+T('newTask')+'"><button onclick="addTask()">'+T('add')+'</button></div><ul id="taskList" style="margin-top:12px"></ul></div>'
+ +'<div class="card"><h2>📝 '+T('notes')+'</h2><textarea id="notes" placeholder="'+T('notesPh')+'"></textarea></div>'
+ +'<div class="card"><h2>📈</h2><div class="statnum" id="sessions">'+(localStorage.getItem('sessions')||'0')+'</div><p style="text-align:center">'+T('sessions')+'</p></div>'
+ +'</div>';
+ gid('notes').value=localStorage.getItem('notes')||'';
+ gid('notes').oninput=function(){ localStorage.setItem('notes',gid('notes').value); };
+ var ti=gid('taskInput');
+ ti.onkeydown=function(e){ if(e.key==='Enter'){ addTask(); } };
+ renderTasks();
+}
+function renderTimer(){ var d=gid('display'); if(d){ d.textContent=fmt(Math.floor(seconds/60))+':'+fmt(seconds%60); } }
+function startTimer(){
+ if(tick){ return; }
+ tick=setInterval(function(){
+   if(seconds>0){ seconds--; renderTimer(); }
+   else{
+     pauseTimer(); seconds=1500; renderTimer();
+     var s=(parseInt(localStorage.getItem('sessions')||'0',10)+1); localStorage.setItem('sessions',s);
+     var el=gid('sessions'); if(el){ el.textContent=s; }
+     alert(T('bravo'));
+   }
+ },1000);
+}
+function pauseTimer(){ if(tick){ clearInterval(tick); tick=null; } }
+function resetTimer(){ pauseTimer(); seconds=1500; renderTimer(); }
+function renderTasks(){
+ var ul=gid('taskList'); if(!ul){ return; }
+ var h='',i;
+ for(i=0;i<tasks.length;i++){
+   h+='<li class="'+(tasks[i].done?'done':'')+'"><span style="cursor:pointer" onclick="toggleTask('+i+')">'+(tasks[i].done?'✅':'⬜')+' '+esc(tasks[i].text)+'</span><button class="btn-del" onclick="delTask('+i+')">'+T('del')+'</button></li>';
+ }
+ ul.innerHTML=h;
+ localStorage.setItem('tasks',JSON.stringify(tasks));
+}
+function addTask(){ var inp=gid('taskInput'); if(inp.value.trim()){ tasks.push({text:inp.value.trim(),done:false}); inp.value=''; renderTasks(); } }
+function toggleTask(i){ tasks[i].done=!tasks[i].done; renderTasks(); }
+function delTask(i){ tasks.splice(i,1); renderTasks(); }
+
+try{
+ render();
+ if(room){
+   apiGet(room.id).then(function(g){ cache=g; render(); startPoll(); })
+   .catch(function(){ alert(T('notFound')); room=null; saveRoom(); render(); });
+ } else {
+   startPoll();
+ }
+}catch(e){
+ gid('welcome').hidden=false;
+ gid('classView').hidden=true;
+ alert('Error: '+e.message);
+}
+</script>
+</body>
+</html>
