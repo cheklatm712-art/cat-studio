@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Social</title>
+<style>
+:root{--blue:#1877f2;--bg:#f0f2f5;--card:#fff;--text:#050505;--sub:#65676b;--green:#42b72a}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+body{background:var(--bg);color:var(--text);max-width:100%}
+header{background:var(--card);display:flex;align-items:center;gap:12px;padding:8px 16px;position:sticky;top:0;box-shadow:0 1px 2px rgba(0,0,0,.1);z-index:10;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--blue);font-size:1.3rem}
+.logo svg{width:34px;height:34px}
+#search{flex:1;min-width:120px;max-width:400px;padding:8px 14px;border-radius:20px;border:none;background:var(--bg);outline:none}
+.hbtn{display:flex;align-items:center;gap:6px;background:var(--bg);border:none;border-radius:20px;padding:8px 14px;cursor:pointer;font-weight:600}
+.hbtn:hover{background:#e4e6eb}
+main{max-width:640px;margin:16px auto;padding:0 10px}
+.card{background:var(--card);border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.1);margin-bottom:14px;padding:14px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.post-head{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.post-head small{color:var(--sub)}
+textarea{width:100%;border:none;resize:vertical;min-height:60px;font-size:1rem;outline:none;font-family:inherit}
+.post-actions{display:flex;justify-content:space-around;border-top:1px solid #e4e6eb;margin-top:10px;padding-top:6px}
+.post-actions button{background:none;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--sub);flex:1}
+.post-actions button:hover{background:var(--bg)}
+.liked{color:var(--blue)!important;font-weight:700!important}
+.comments{background:var(--bg);border-radius:8px;padding:8px;margin-top:8px;font-size:.92rem}
+.comment{margin:4px 0;background:#fff;border-radius:14px;padding:6px 10px;width:fit-content;max-width:100%}
+.comment b{display:block;font-size:.8rem}
+.comment-row{display:flex;gap:6px;margin-top:6px}
+.comment-row input{flex:1;border:none;border-radius:16px;padding:8px 12px;outline:none}
+.chat-box{position:fixed;bottom:0;right:16px;width:300px;max-width:90vw;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 4px 20px rgba(0,0,0,.2);display:none;flex-direction:column;z-index:20}
+.chat-box.open{display:flex}
+.chat-head{background:var(--blue);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;cursor:pointer;border-radius:12px 12px 0 0}
+.chat-msgs{height:260px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+.msg{max-width:80%;padding:8px 12px;border-radius:16px;font-size:.9rem}
+.msg.me{align-self:flex-end;background:var(--blue);color:#fff}
+.msg.them{align-self:flex-start;background:#e4e6eb}
+.chat-input{display:flex;border-top:1px solid #e4e6eb}
+.chat-input input{flex:1;border:none;padding:10px;outline:none}
+.chat-input button{border:none;background:var(--blue);color:#fff;padding:0 16px;cursor:pointer}
+.auth{max-width:400px;margin:60px auto}
+.auth input,.auth select{width:100%;padding:12px;margin:6px 0;border:1px solid #dddfe2;border-radius:8px;font-size:1rem}
+.btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:12px;width:100%;font-size:1rem;font-weight:700;cursor:pointer}
+.badge{font-size:.75rem;padding:2px 8px;border-radius:10px;background:#e7f3ff;color:var(--blue);font-weight:600}
+.t-teacher{background:#e8f5e9;color:#2e7d32}
+.hidden{display:none}
+@media(max-width:600px){.logo span{display:none}.chat-box{right:0;width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="8" fill="#1877f2"/><text x="18" y="25" font-size="20" fill="#fff" text-anchor="middle" font-weight="bold">S</text></svg><span data-i18n="brand">منصة الدراسة</span></div>
+  <input id="search" data-i18n-ph="searchPh" placeholder="ابحث في المنصة...">
+  <button class="hbtn" id="langBtn" onclick="toggleLang()">EN</button>
+  <button class="hbtn" id="chatBtn" onclick="toggleChat()">💬 <span data-i18n="chat">الدردشة</span></button>
+  <button class="hbtn" onclick="logout()" id="logoutBtn" data-i18n="logout">خروج</button>
+</header>
+<div id="authView" class="auth card">
+  <h2 data-i18n="login">تسجيل الدخول / إنشاء حساب</h2>
+  <input id="uName" data-i18n-ph="namePh" placeholder="اسمك">
+  <select id="uRole">
+    <option value="student" data-i18n="student">طالب</option>
+    <option value="teacher" data-i18n="teacher">معلم</option>
+  </select>
+  <button class="btn" onclick="login()" data-i18n="enter">دخول</button>
+</div>
+<div id="appView" class="hidden">
+  <main>
+    <div class="card">
+      <div class="post-head">
+        <div class="avatar" id="myAvatar">؟</div>
+        <textarea id="postText" data-i18n-ph="whatsUp" placeholder="بماذا تفكر؟ شارك درسًا أو سؤالًا..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center">
+        <span class="badge" id="roleBadge"></span>
+        <button class="btn" style="width:auto;padding:8px 20px" onclick="addPost()" data-i18n="post">نشر</button>
+      </div>
+    </div>
+    <div id="feed"></div>
+  </main>
+</div>
+<div class="chat-box" id="chatBox">
+  <div class="chat-head" onclick="toggleChat()"><span data-i18n="chat">الدردشة</span><span>✕</span></div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-input">
+    <input id="chatInput" data-i18n-ph="msgPh" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button onclick="sendMsg()" data-i18n="send">إرسال</button>
+  </div>
+</div>
+<script>
+let LANG='ar', ME=null;
+const I18N={
+ ar:{brand:'منصة الدراسة',searchPh:'ابحث في المنصة...',chat:'الدردشة',logout:'خروج',login:'تسجيل الدخول / إنشاء حساب',namePh:'اسمك',student:'طالب',teacher:'معلم',enter:'دخول',whatsUp:'بماذا تفكر؟ شارك درسًا أو سؤالًا...',post:'نشر',send:'إرسال',msgPh:'اكتب رسالة...',like:'إعجاب',comment:'تعليق',cmPh:'اكتب تعليقًا...',empty:'لا توجد منشورات بعد. كن أول من ينشر!'},
+ en:{brand:'Study Platform',searchPh:'Search the platform...',chat:'Chat',logout:'Log out',login:'Login / Sign up',namePh:'Your name',student:'Student',teacher:'Teacher',enter:'Enter',whatsUp:"What's on your mind? Share a lesson or question...",post:'Post',send:'Send',msgPh:'Type a message...',like:'Like',comment:'Comment',cmPh:'Write a comment...',empty:'No posts yet. Be the first!'}
+};
+const store={get:(k,d)=>JSON.parse(localStorage.getItem('sp_'+k))||d,set:(k,v)=>localStorage.setItem('sp_'+k,JSON.stringify(v))};
+let posts=store.get('posts',[]), msgs=store.get('msgs',[]), users=store.get('users',{});
+function t(k){return I18N[LANG][k]||k}
+function applyLang(){
+ document.documentElement.lang=LANG; document.documentElement.dir=LANG==='ar'?'rtl':'ltr';
+ document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
+ document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=t(e.dataset.i18nPh));
+ document.getElementById('langBtn').textContent=LANG==='ar'?'EN':'ع';
+ renderFeed();
+}
+function toggleLang(){LANG=LANG==='ar'?'en':'ar';store.set('lang',LANG);applyLang()}
+function login(){
+ const n=document.getElementById('uName').value.trim();
+ if(!n)return alert(t('namePh'));
+ const role=document.getElementById('uRole').value;
+ ME={name:n,role};
+ users[n]={role};store.set('users',users);
+ document.getElementById('authView').classList.add('hidden');
+ document.getElementById('appView').classList.remove('hidden');
+ document.getElementById('myAvatar').textContent=n[0].toUpperCase();
+ const b=document.getElementById('roleBadge');
+ b.textContent=(role==='teacher'?t('teacher'):t('student'));b.className='badge'+(role==='teacher'?' t-teacher':'');
+ renderFeed();
+}
+function logout(){ME=null;document.getElementById('appView').classList.add('hidden');document.getElementById('authView').classList.remove('hidden')}
+function addPost(){
+ const txt=document.getElementById('postText').value.trim(); if(!txt||!ME)return;
+ posts.unshift({id:Date.now(),author:ME.name,role:ME.role,text:txt,likes:[],comments:[],time:new Date().toLocaleString(LANG==='ar'?'ar':'en')});
+ store.set('posts',posts);document.getElementById('postText').value='';renderFeed();
+}
+function like(id){const p=posts.find(x=>x.id===id);const i=p.likes.indexOf(ME.name);i>-1?p.likes.splice(i,1):p.likes.push(ME.name);store.set('posts',posts);renderFeed()}
+function delPost(id){if(!ME)return;const p=posts.find(x=>x.id===id);
+ if(p.author!==ME.name&&ME.role!=='teacher')return;
+ posts=posts.filter(x=>x.id!==id);store.set('posts',posts);renderFeed()}
+function addComment(id){
+ const inp=document.getElementById('ci'+id);const v=inp.value.trim();if(!v)return;
+ posts.find(x=>x.id===id).comments.push({by:ME.name,text:v});store.set('posts',posts);renderFeed();
+}
+function esc(s){return s.replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function renderFeed(){
+ const q=(document.getElementById('search').value||'').toLowerCase();
+ const feed=document.getElementById('feed');if(!ME)return;
+ const list=posts.filter(p=>p.text.toLowerCase().includes(q)||p.author.toLowerCase().includes(q));
+ feed.innerHTML=list.length?'':'<div class="card" style="text-align:center;color:var(--sub)">'+t('empty')+'</div>';
+ list.forEach(p=>{
+  const liked=p.likes.includes(ME.name);
+  feed.innerHTML+=`<div class="card">
+   <div class="post-head"><div class="avatar">${esc(p.author[0].toUpperCase())}</div>
+    <div><b>${esc(p.author)}</b> ${p.role==='teacher'?'<span class="badge t-teacher">'+t('teacher')+'</span>':''}<br><small>${p.time}</small></div>
+    <button style="margin-inline-start:auto;background:none;border:none;cursor:pointer" onclick="delPost(${p.id})">🗑</button></div>
+   <p style="white-space:pre-wrap">${esc(p.text)}</p>
+   <small style="color:var(--sub)">👍 ${p.likes.length} · 💬 ${p.comments.length}</small>
+   <div class="post-actions">
+    <button class="${liked?'liked':''}" onclick="like(${p.id})">👍 ${t('like')}</button>
+    <button onclick="document.getElementById('ci${p.id}').focus()">💬 ${t('comment')}</button>
+   </div>
+   <div class="comments">${p.comments.map(c=>`<div class="comment"><b>${esc(c.by)}</b>${esc(c.text)}</div>`).join('')}
+    <div class="comment-row"><input id="ci${p.id}" placeholder="${t('cmPh')}" onkeydown="if(event.key==='Enter')addComment(${p.id})">
+    <button onclick="addComment(${p.id})">➤</button></div></div></div>`;
+ });
+}
+function toggleChat(){document.getElementById('chatBox').classList.toggle('open');renderChat()}
+function sendMsg(){
+ const v=document.getElementById('chatInput').value.trim();if(!v)return;
+ msgs.push({from:ME.name,text:v,time:new Date().toLocaleTimeString()});store.set('msgs',msgs);
+ document.getElementById('chatInput').value='';renderChat();
+}
+function renderChat(){
+ document.getElementById('chatMsgs').innerHTML=msgs.map(m=>
+  `<div class="msg ${m.from===ME.name?'me':'them'}"><b>${esc(m.from)}</b><br>${esc(m.text)}</div>`).join('');
+ document.getElementById('chatMsgs').scrollTop=1e5;
+}
+document.getElementById('search').addEventListener('input',()=>{if(ME)renderFeed()});
+LANG=store.get('lang','ar');applyLang();
+</script>
+</body>
+</html>
